@@ -30,6 +30,11 @@ app.get('/', (request, response) => {
 	response.send('<h1>PhoneBook Api</h1>');
 });
 
+app.get('/info', (request, response) => {
+	const count = phoneBook.length;
+	response.send(`<p>Phonebook has ${count} People</p><p>${Date()}</p>`);
+});
+
 app.get('/api/persons', (request, response) => {
 	response.json(phoneBook);
 });
