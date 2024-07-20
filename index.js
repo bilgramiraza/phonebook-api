@@ -39,16 +39,16 @@ let phoneBook = [
 	}
 ];
 
-app.get('/', (request, response) => {
+app.get('/', (_request, response) => {
 	response.send('<h1>PhoneBook Api</h1>');
 });
 
-app.get('/info', (request, response) => {
+app.get('/info', (_request, response) => {
 	const count = phoneBook.length;
 	response.send(`<p>Phonebook has ${count} People</p><p>${Date()}</p>`);
 });
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (_request, response) => {
 	response.json(phoneBook);
 });
 
@@ -106,7 +106,7 @@ app.post('/api/persons', (request, response) => {
 	response.json(person);
 });
 
-const unknownEndpoint = (request, response) => {
+const unknownEndpoint = (_request, response) => {
 	response.status(404).send({ error: "Endpoint Not Found" });
 };
 
