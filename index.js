@@ -64,12 +64,22 @@ const generateId = () => {
 	return String(maxId + 1);
 };
 
+const checkDuplicate = newName => {
+	const duplicate = phoneBook.find(pB => pB.name === newName);
+	return Boolean(duplicate);
+};
+
 app.post('/api/persons', (request, response) => {
 	const { name: personName, number: personNumber } = request.body;
 
 	if (!personName || !personNumber)
 		return response.status(400).json({
 			error: "Data Missing"
+		});
+
+	if (checkDuplicate(personName))
+		return response.status(400).json({
+			error: "Name Must be Unique"
 		});
 
 	const person = {
