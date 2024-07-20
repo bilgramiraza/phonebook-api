@@ -4,7 +4,16 @@ const app = express();
 
 app.use(express.json());
 
-app.use(morgan('tiny'));
+const postedDataToken = (tokens) => {
+	const postedData = tokens.body;
+	return JSON.stringify(postedData);
+}
+
+morgan.token('postedData', postedDataToken);
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postedData', {
+	skip: req => req.method !== "POST",
+}));
 
 let phoneBook = [
 	{
