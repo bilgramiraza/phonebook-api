@@ -4,15 +4,16 @@ const app = express();
 
 app.use(express.json());
 
-const postedDataToken = (tokens) => {
-	const postedData = tokens.body;
-	return JSON.stringify(postedData);
+const postedDataToken = (_tokens) => {
+	if (true) return ' ';//Replace with ENV Condition for Logging Post Data
+	// const postedData = tokens.body;
+	// return JSON.stringify(postedData);
 }
 
 morgan.token('postedData', postedDataToken);
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postedData', {
-	skip: req => req.method !== "POST",
+	//skip: req => req.method !== "POST" , // Replace Skip Logic With ENV Based Check for Methods Filtering
 }));
 
 let phoneBook = [
