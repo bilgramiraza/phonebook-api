@@ -56,6 +56,33 @@ app.delete('/api/persons/:id', (request, response) => {
 	response.status(204).end();
 });
 
+const generateId = () => {
+	const maxId = phoneBook.length > 0
+		? Math.max(...phoneBook.map(pB => Number(pB.id)))
+		: 0;
+
+	return String(maxId + 1);
+};
+
+app.post('/api/persons', (request, response) => {
+	const { name: personName, number: personNumber } = request.body;
+
+	if (!personName || !personNumber)
+		return response.status(400).json({
+			error: "Data Missing"
+		});
+
+	const person = {
+		id: generateId(),
+		name: personName,
+		number: personNumber,
+	};
+
+	phoneBook = phoneBook.concat(person);
+
+	response.json(person);
+});
+
 const PORT = 3001;
 app.listen(PORT, () => {
 	console.log(`Server Running and Listening on Port ${PORT}`)
