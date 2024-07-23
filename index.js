@@ -41,9 +41,7 @@ let phoneBook = [
 	}
 ];
 
-app.get('/', (_request, response) => {
-	response.send('<h1>PhoneBook Api</h1>');
-});
+app.use(express.static('dist'));
 
 app.get('/info', (_request, response) => {
 	const count = phoneBook.length;
