@@ -1,7 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const app = express();
+const Person = require('./models/people.js');
 
 app.use(cors());
 app.use(express.json());
@@ -18,47 +20,31 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 	//skip: req => req.method !== "POST" , // Replace Skip Logic With ENV Based Check for Methods Filtering
 }));
 
-let phoneBook = [
-	{
-		"id": "1",
-		"name": "Arto Hellas",
-		"number": "040-123456"
-	},
-	{
-		"id": "2",
-		"name": "Ada Lovelace",
-		"number": "39-44-5323523"
-	},
-	{
-		"id": "3",
-		"name": "Dan Abramov",
-		"number": "12-43-234345"
-	},
-	{
-		"id": "4",
-		"name": "Mary Poppendieck",
-		"number": "39-23-6423122"
-	}
-];
-
 app.use(express.static('dist'));
 
 app.get('/info', (_request, response) => {
-	const count = phoneBook.length;
-	response.send(`<p>Phonebook has ${count} People</p><p>${Date()}</p>`);
+	Person
+		.countDocuments()
+		.then(result => {
+			response.send(`<p>Phonebook has ${result} People</p><p>${Date()}</p>`);
+		})
 });
 
 app.get('/api/persons', (_request, response) => {
-	response.json(phoneBook);
+	Person
+		.find({})
+		.then(people => {
+			response.json(people);
+		});
 });
 
 app.get('/api/persons/:id', (request, response) => {
 	const id = request.params.id;
-	const person = phoneBook.find(pB => pB.id === id);
+	Person.findById(id).then(person => {
+		if (!person) return response.status(404).end();
+		response.json(person);
+	});
 
-	if (!person) return response.status(404).end();
-
-	response.json(person);
 });
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -69,19 +55,6 @@ app.delete('/api/persons/:id', (request, response) => {
 	response.status(204).end();
 });
 
-const generateId = () => {
-	const maxId = phoneBook.length > 0
-		? Math.max(...phoneBook.map(pB => Number(pB.id)))
-		: 0;
-
-	return String(maxId + 1);
-};
-
-const checkDuplicate = newName => {
-	const duplicate = phoneBook.find(pB => pB.name === newName);
-	return Boolean(duplicate);
-};
-
 app.post('/api/persons', (request, response) => {
 	const { name: personName, number: personNumber } = request.body;
 
@@ -90,20 +63,17 @@ app.post('/api/persons', (request, response) => {
 			error: "Data Missing"
 		});
 
-	if (checkDuplicate(personName))
-		return response.status(400).json({
-			error: "Name Must be Unique"
-		});
-
-	const person = {
-		id: generateId(),
+	const person = new Person({
 		name: personName,
 		number: personNumber,
-	};
+	});
 
-	phoneBook = phoneBook.concat(person);
+	person
+		.save()
+		.then(savedPerson => {
+			response.json(savedPerson);
+		});
 
-	response.json(person);
 });
 
 const unknownEndpoint = (_request, response) => {
@@ -112,7 +82,7 @@ const unknownEndpoint = (_request, response) => {
 
 app.use(unknownEndpoint);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
 	console.log(`Server Running and Listening on Port ${PORT}`)
 });
