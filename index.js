@@ -22,20 +22,18 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 
 app.use(express.static('dist'));
 
-app.get('/info', (_request, response) => {
+app.get('/info', (_request, response, next) => {
 	Person
 		.countDocuments()
-		.then(result => {
-			response.send(`<p>Phonebook has ${result} People</p><p>${Date()}</p>`);
-		})
+		.then(result => response.send(`<p>Phonebook has ${result} People</p><p>${Date()}</p>`))
+		.catch(error => next(error));
 });
 
-app.get('/api/persons', (_request, response) => {
+app.get('/api/persons', (_request, response, next) => {
 	Person
 		.find({})
-		.then(people => {
-			response.json(people);
-		});
+		.then(people => response.json(people))
+		.catch(error => next(error));
 });
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -58,7 +56,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 		.catch(error => next(error));
 });
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
 	const { name: personName, number: personNumber } = request.body;
 
 	if (!personName || !personNumber)
@@ -73,9 +71,24 @@ app.post('/api/persons', (request, response) => {
 
 	person
 		.save()
-		.then(savedPerson => {
-			response.json(savedPerson);
-		});
+		.then(savedPerson => response.json(savedPerson))
+		.catch(error => next(error));
+
+});
+
+app.put('/api/persons/:id', (request, response, next) => {
+	const id = request.params.id;
+	const { name: personName, number: personNumber } = request.body;
+
+	const person = {
+		name: personName,
+		number: personNumber,
+	};
+
+	Person
+		.findByIdAndUpdate(id, person, { new: true })
+		.then(updatedPerson => response.json(updatedPerson))
+		.catch(error => next(error));
 
 });
 
